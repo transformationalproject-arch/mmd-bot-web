@@ -82,8 +82,9 @@ export default function MMDBotClient() {
     }
   };
 
-  const formatMessage = (text) => {
+const formatMessage = (text) => {
     return text
+      .replace(/^#{1,3} (.*?)$/gm, "<strong>$1</strong>")
       .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
       .replace(/\*(.*?)\*/g, "<em>$1</em>")
       .replace(/\n/g, "<br/>");
