@@ -87,6 +87,8 @@ const formatMessage = (text) => {
       .replace(/^#{1,3} (.*?)$/gm, "<strong>$1</strong>")
       .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
       .replace(/\*(.*?)\*/g, "<em>$1</em>")
+      .replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank" style="color:#dd226e;font-weight:600;">$1</a>')
+      .replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" style="color:#dd226e;font-weight:600;">$1</a>')
       .replace(/\n/g, "<br/>");
   };
 
