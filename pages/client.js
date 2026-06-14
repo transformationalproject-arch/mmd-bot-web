@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react"; import Head from "next/head";
+
 
 const TONES = [
   { id: "warm", label: "Warm & Supportive", emoji: "🌿" },
@@ -88,7 +89,12 @@ export default function MMDBotClient() {
       .replace(/\n/g, "<br/>");
   };
 
-  const activeToneObj = TONES.find((t) => t.id === activeTone);
+  const activeToneObj = TONES.find((t) => t.id === activeTone); useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+    }
+  }, []);
+
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh", fontFamily: "'Inter', sans-serif", background: "#eaf6f1", maxWidth: "680px", margin: "0 auto" }}>
@@ -168,6 +174,14 @@ export default function MMDBotClient() {
           This is a safe, judgment-free space 🦋 · MMD Coaching © 2026
         </div>
       </div>
+      <Head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#52a5ac" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="MMD Bot" />
+        <link rel="apple-touch-icon" href="/icon-192.png" />
+      </Head>
 
       <style>{`
         @keyframes bounce { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
