@@ -141,7 +141,7 @@ export default function MMDBotClient() {
         {streamingText && (
           <div style={{ display: "flex", gap: "8px", alignItems: "flex-start" }}>
             <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: "linear-gradient(135deg, #52a5ac, #3d8a91)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "15px", flexShrink: 0 }}>🦋</div>
-            <div style={{ maxWidth: "78%", padding: "12px 16px", borderRadius: "18px 18px 18px 4px", background: "white", fontSize: "14px", lineHeight: "1.7", boxShadow: "0 2px 10px rgba(0,0,0,0.06)" }}
+            <div style={{ maxWidth: "78%", padding: "12px 16px", borderRadius: "18px 18px 18px 4px", background: "white", fontSize: "14px", lineHeight: "1.7", boxShadow: "0 2px 10px rgba(0,0,0,0.06)", color: "#1a1a1a" }}
               dangerouslySetInnerHTML={{ __html: formatMessage(streamingText) }} />
           </div>
         )}
