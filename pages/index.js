@@ -32,7 +32,10 @@ export default function MMDBot() {
   const [currentConvoId, setCurrentConvoId] = useState(null);
   const [conversations, setConversations] = useState([]);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [attachedFile, setAttachedFile] = useState(null);
+  const [fileLoading, setFileLoading] = useState(false);
   const messagesEndRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -91,6 +94,7 @@ export default function MMDBot() {
     setMessages([WELCOME]);
     setCurrentConvoId(null);
     setHistoryOpen(false);
+    setAttachedFile(null);
   };
 
   const deleteConversation = async (id, e) => {
@@ -104,15 +108,43 @@ export default function MMDBot() {
     }
   };
 
-  const handleSend = async () => {
-    if (!input.trim() || loading) return;
+  const handleFileSelect = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-    const userMessage = { role: "user", content: input };
+    setFileLoading(true);
+    try {
+      const text = await file.text();
+      setAttachedFile({ name: file.name, content: text });
+    } catch (err) {
+      alert("Could not read this file. Please try a .txt or .md file.");
+    } finally {
+      setFileLoading(false);
+    }
+  };
+
+  const removeAttachedFile = () => {
+    setAttachedFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleSend = async () => {
+    if ((!input.trim() && !attachedFile) || loading) return;
+
+    const userMessageContent = attachedFile
+      ? `${input || "Please review this document."} [📎 ${attachedFile.name}]`
+      : input;
+
+    const userMessage = { role: "user", content: userMessageContent };
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
     setInput("");
     setLoading(true);
     setStreamingText("");
+
+    const fileToSend = attachedFile;
+    setAttachedFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
 
     try {
       const response = await fetch("/api/chat", {
@@ -122,6 +154,7 @@ export default function MMDBot() {
           messages: newMessages,
           role: ROLES.find((r) => r.id === activeRole)?.label,
           tone: TONES.find((t) => t.id === activeTone)?.label,
+          attachedFile: fileToSend,
         }),
       });
 
@@ -303,11 +336,19 @@ export default function MMDBot() {
         </div>
 
         <div style={{ background: "white", borderTop: "1px solid #e0f0ec", padding: "16px 24px", boxShadow: "0 -2px 12px rgba(82,165,172,0.06)" }}>
+          {attachedFile && (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#eaf6f1", borderRadius: "10px", padding: "8px 12px", marginBottom: "8px", fontSize: "12.5px", color: "#52a5ac" }}>
+              <span>📎 {attachedFile.name}</span>
+              <button onClick={removeAttachedFile} style={{ background: "none", border: "none", color: "#52a5ac", cursor: "pointer", fontSize: "13px" }}>✕</button>
+            </div>
+          )}
           <div style={{ display: "flex", gap: "12px", alignItems: "flex-end", background: "#eaf6f1", borderRadius: "16px", padding: "10px 10px 10px 16px", border: "1.5px solid #c8e8e4" }}>
-            <textarea value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown} placeholder={`Ask MMD Bot about ${ROLES.find(r => r.id === activeRole)?.label.toLowerCase()}...`} rows={1}
+            <input type="file" ref={fileInputRef} onChange={handleFileSelect} accept=".txt,.md,.csv,.json" style={{ display: "none" }} />
+            <button onClick={() => fileInputRef.current?.click()} disabled={fileLoading} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "20px", color: "#52a5ac", padding: "4px" }}>📎</button>
+            <textarea value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown} placeholder={attachedFile ? "Ask something about this file..." : `Ask MMD Bot about ${ROLES.find(r => r.id === activeRole)?.label.toLowerCase()}...`} rows={1}
               style={{ flex: 1, border: "none", background: "transparent", resize: "none", fontSize: "14px", lineHeight: "1.5", color: "#1a1a1a", outline: "none", fontFamily: "inherit", maxHeight: "120px" }} />
-            <button onClick={handleSend} disabled={loading || !input.trim()}
-              style={{ width: "40px", height: "40px", borderRadius: "12px", border: "none", background: loading || !input.trim() ? "#c8e8e4" : "linear-gradient(135deg, #dd226e, #c41d60)", color: "white", cursor: loading || !input.trim() ? "not-allowed" : "pointer", fontSize: "18px", display: "flex", alignItems: "center", justifyContent: "center" }}>↑</button>
+            <button onClick={handleSend} disabled={loading || (!input.trim() && !attachedFile)}
+              style={{ width: "40px", height: "40px", borderRadius: "12px", border: "none", background: loading || (!input.trim() && !attachedFile) ? "#c8e8e4" : "linear-gradient(135deg, #dd226e, #c41d60)", color: "white", cursor: loading || (!input.trim() && !attachedFile) ? "not-allowed" : "pointer", fontSize: "18px", display: "flex", alignItems: "center", justifyContent: "center" }}>↑</button>
           </div>
           <div style={{ textAlign: "center", marginTop: "8px", fontSize: "11px", color: "#aaa" }}>Press Enter to send · Shift+Enter for new line · MMD Coaching © 2026</div>
         </div>

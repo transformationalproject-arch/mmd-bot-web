@@ -50,7 +50,9 @@ CRITICAL RESPONSE RULES:
 - Keep all responses focused purely on MMD Coaching
 - Never mention sources, materials, or knowledge base references to clients
 - Never say things like "this is not part of MMD Coaching" or "based on the materials"
-- If knowledge base returns irrelevant results, ignore them and answer from MMD Coaching knowledge only`;
+- If knowledge base returns irrelevant results, ignore them and answer from MMD Coaching knowledge only
+
+If the user has attached a document, use its full content as context to continue the conversation, answer questions about it, or build on it as instructed.`;
 
 async function getEmbedding(text) {
   const response = await openai.embeddings.create({
@@ -86,7 +88,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { messages, role, tone } = req.body;
+  const { messages, role, tone, attachedFile } = req.body;
 
   try {
     const lastMessage = messages[messages.length - 1].content;
@@ -95,11 +97,17 @@ export default async function handler(req, res) {
 
     const enrichedMessages = messages.map((msg, i) => {
       if (i === messages.length - 1) {
+        let content = context
+          ? `${context}\n[Role: ${role}] [Tone: ${tone}]\n\nUSER REQUEST: ${msg.content}`
+          : `[Role: ${role}] [Tone: ${tone}]\n\n${msg.content}`;
+
+        if (attachedFile) {
+          content = `ATTACHED DOCUMENT (${attachedFile.name}):\n\n${attachedFile.content}\n\n---\n\n${content}`;
+        }
+
         return {
           role: msg.role,
-          content: context
-            ? `${context}\n[Role: ${role}] [Tone: ${tone}]\n\nUSER REQUEST: ${msg.content}`
-            : `[Role: ${role}] [Tone: ${tone}]\n\n${msg.content}`,
+          content,
         };
       }
       return msg;
