@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-
+import Head from "next/head";
 const ROLES = [
   { id: "coach", label: "Coach Support", icon: "🧭" },
   { id: "social", label: "Social Media", icon: "📱" },
@@ -33,6 +33,12 @@ export default function MMDBot() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, streamingText]);
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+    }
+  }, []);
+
 
   const handleSend = async () => {
     if (!input.trim() || loading) return;
@@ -203,6 +209,15 @@ export default function MMDBot() {
         * { box-sizing: border-box; }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: #c8e8e4; border-radius: 3px; }
+        <Head>
+        <link rel="manifest" href="/manifest-main.json" />
+        <meta name="theme-color" content="#52a5ac" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="MMD Bot" />
+        <link rel="apple-touch-icon" href="/icon-192.png" />
+      </Head>
+
       `}</style>
     </div>
   );
