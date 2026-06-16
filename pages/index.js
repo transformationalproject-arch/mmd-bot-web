@@ -91,6 +91,11 @@ export default function MMDBot() {
       setLoading(false);
     }
   };
+const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+  };
+
+  const handleKeyDown = (e) => {
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -161,11 +166,17 @@ export default function MMDBot() {
         <div style={{ flex: 1, overflowY: "auto", padding: "24px", display: "flex", flexDirection: "column", gap: "16px" }}>
           {messages.map((msg, i) => (
             <div key={i} style={{ display: "flex", justifyContent: msg.role === "user" ? "flex-end" : "flex-start", gap: "10px", alignItems: "flex-start" }}>
-              {msg.role === "assistant" && (
+             {msg.role === "assistant" && (
                 <div style={{ width: "34px", height: "34px", borderRadius: "50%", background: "linear-gradient(135deg, #52a5ac, #3d8a91)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "16px", flexShrink: 0 }}>🦋</div>
               )}
-              <div style={{ maxWidth: "72%", padding: "13px 17px", borderRadius: msg.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px", background: msg.role === "user" ? "linear-gradient(135deg, #dd226e, #c41d60)" : "white", color: msg.role === "user" ? "white" : "#1a1a1a", fontSize: "14px", lineHeight: "1.65", boxShadow: msg.role === "user" ? "0 2px 12px rgba(221,34,110,0.25)" : "0 2px 12px rgba(0,0,0,0.06)" }}
-                dangerouslySetInnerHTML={{ __html: formatMessage(msg.content) }} />
+              <div style={{ position: "relative", maxWidth: "72%" }}>
+                <div style={{ padding: "13px 17px", borderRadius: msg.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px", background: msg.role === "user" ? "linear-gradient(135deg, #dd226e, #c41d60)" : "white", color: msg.role === "user" ? "white" : "#1a1a1a", fontSize: "14px", lineHeight: "1.65", boxShadow: msg.role === "user" ? "0 2px 12px rgba(221,34,110,0.25)" : "0 2px 12px rgba(0,0,0,0.06)" }}
+                  dangerouslySetInnerHTML={{ __html: formatMessage(msg.content) }} />
+                {msg.role === "assistant" && (
+                  <button onClick={() => copyToClipboard(msg.content)} style={{ marginTop: "4px", background: "none", border: "none", cursor: "pointer", fontSize: "11px", color: "#52a5ac", fontWeight: "600", padding: "2px 6px", borderRadius: "6px" }}>📋 Copy</button>
+                )}
+              </div>
+
               {msg.role === "user" && (
                 <div style={{ width: "34px", height: "34px", borderRadius: "50%", background: "linear-gradient(135deg, #dd226e, #c41d60)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", flexShrink: 0, color: "white", fontWeight: "700" }}>M</div>
               )}
