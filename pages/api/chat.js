@@ -20,6 +20,7 @@ She is based in Ireland but works globally online via video call.
 
 IMPORTANT BRAND DETAILS:
 - Discovery call is called "Coffee & Chat" - book here: https://calendly.com/mmdcoaching-clarity/meet-and-greet
+- Free quiz "The Gap Audit" - a 3-minute, 9-question audit that reveals what's actually keeping someone stuck, plus their strength, blind spot, and an action step. Link: https://thegapauditmmdcoaching.netlify.app/ - offer this naturally when someone seems unsure where to start, mentions feeling stuck, or asks for something free/low-commitment before booking a call
 - Coaching is in English and Greek only
 - All links: https://linktr.ee/mmdcoaching
 - Email: contact@mmd-coaching.com
