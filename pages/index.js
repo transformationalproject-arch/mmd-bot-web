@@ -19,16 +19,19 @@ const TONES = [
   { id: "casual", label: "Casual" },
 ];
 
+const WELCOME = { role: "assistant", content: "Welcome! I'm MMD Bot — your intelligent assistant powered by Myrsini's coaching methodology. How can I support you today? 🦋" };
+
 export default function MMDBot() {
-  const [messages, setMessages] = useState([
-    { role: "assistant", content: "Welcome! I'm MMD Bot — your intelligent assistant powered by Myrsini's coaching methodology. How can I support you today? 🦋" },
-  ]);
+  const [messages, setMessages] = useState([WELCOME]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [activeRole, setActiveRole] = useState("coach");
   const [activeTone, setActiveTone] = useState("warm");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [streamingText, setStreamingText] = useState("");
+  const [currentConvoId, setCurrentConvoId] = useState(null);
+  const [conversations, setConversations] = useState([]);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -40,6 +43,66 @@ export default function MMDBot() {
       navigator.serviceWorker.register('/sw.js');
     }
   }, []);
+
+  useEffect(() => {
+    fetchConversations();
+  }, []);
+
+  const fetchConversations = async () => {
+    try {
+      const res = await fetch("/api/conversations");
+      const data = await res.json();
+      setConversations(data || []);
+    } catch (e) {
+      console.error("Failed to fetch conversations", e);
+    }
+  };
+
+  const saveConversation = async (newMessages) => {
+    try {
+      const roleLabel = ROLES.find((r) => r.id === activeRole)?.label || "Chat";
+      const title = newMessages.find((m) => m.role === "user")?.content?.slice(0, 50) || roleLabel;
+
+      const res = await fetch("/api/conversations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: currentConvoId,
+          role: roleLabel,
+          title,
+          messages: newMessages,
+        }),
+      });
+      const data = await res.json();
+      if (!currentConvoId) setCurrentConvoId(data.id);
+      fetchConversations();
+    } catch (e) {
+      console.error("Failed to save conversation", e);
+    }
+  };
+
+  const loadConversation = (convo) => {
+    setMessages(convo.messages);
+    setCurrentConvoId(convo.id);
+    setHistoryOpen(false);
+  };
+
+  const startNewConversation = () => {
+    setMessages([WELCOME]);
+    setCurrentConvoId(null);
+    setHistoryOpen(false);
+  };
+
+  const deleteConversation = async (id, e) => {
+    e.stopPropagation();
+    try {
+      await fetch(`/api/conversations?id=${id}`, { method: "DELETE" });
+      fetchConversations();
+      if (id === currentConvoId) startNewConversation();
+    } catch (e) {
+      console.error("Failed to delete conversation", e);
+    }
+  };
 
   const handleSend = async () => {
     if (!input.trim() || loading) return;
@@ -84,8 +147,10 @@ export default function MMDBot() {
         }
       }
 
-      setMessages((prev) => [...prev, { role: "assistant", content: fullText }]);
+      const finalMessages = [...newMessages, { role: "assistant", content: fullText }];
+      setMessages(finalMessages);
       setStreamingText("");
+      saveConversation(finalMessages);
     } catch (error) {
       setMessages((prev) => [...prev, { role: "assistant", content: "Something went wrong. Please try again." }]);
     } finally {
@@ -111,6 +176,12 @@ export default function MMDBot() {
       .replace(/\n/g, "<br/>");
   };
 
+  const groupedConversations = conversations.reduce((acc, c) => {
+    if (!acc[c.role]) acc[c.role] = [];
+    acc[c.role].push(c);
+    return acc;
+  }, {});
+
   return (
     <>
     <div style={{ display: "flex", height: "100vh", fontFamily: "'Inter', sans-serif", background: "#eaf6f1" }}>
@@ -126,27 +197,54 @@ export default function MMDBot() {
             </div>
           </div>
 
-          <div style={{ padding: "20px 16px 12px" }}>
-            <div style={{ fontSize: "11px", fontWeight: "600", color: "#52a5ac", letterSpacing: "1.2px", textTransform: "uppercase", marginBottom: "10px", paddingLeft: "4px" }}>I'm working on...</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-              {ROLES.map((role) => (
-                <button key={role.id} onClick={() => setActiveRole(role.id)} style={{ display: "flex", alignItems: "center", gap: "10px", padding: "9px 12px", borderRadius: "8px", border: "none", cursor: "pointer", background: activeRole === role.id ? "#eaf6f1" : "transparent", color: activeRole === role.id ? "#52a5ac" : "#666", fontWeight: activeRole === role.id ? "600" : "400", fontSize: "13.5px", textAlign: "left", borderLeft: activeRole === role.id ? "3px solid #52a5ac" : "3px solid transparent" }}>
-                  <span style={{ fontSize: "16px" }}>{role.icon}</span>{role.label}
-                </button>
-              ))}
-            </div>
+          <div style={{ display: "flex", borderBottom: "1px solid #eaf6f1" }}>
+            <button onClick={() => setHistoryOpen(false)} style={{ flex: 1, padding: "10px", border: "none", background: !historyOpen ? "#eaf6f1" : "white", color: !historyOpen ? "#52a5ac" : "#888", fontWeight: !historyOpen ? "600" : "400", fontSize: "12px", cursor: "pointer" }}>Roles</button>
+            <button onClick={() => setHistoryOpen(true)} style={{ flex: 1, padding: "10px", border: "none", background: historyOpen ? "#eaf6f1" : "white", color: historyOpen ? "#52a5ac" : "#888", fontWeight: historyOpen ? "600" : "400", fontSize: "12px", cursor: "pointer" }}>History</button>
           </div>
 
-          <div style={{ padding: "12px 16px 20px", marginTop: "auto", borderTop: "1px solid #eaf6f1" }}>
-            <div style={{ fontSize: "11px", fontWeight: "600", color: "#52a5ac", letterSpacing: "1.2px", textTransform: "uppercase", marginBottom: "10px", paddingLeft: "4px" }}>Tone</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-              {TONES.map((tone) => (
-                <button key={tone.id} onClick={() => setActiveTone(tone.id)} style={{ padding: "7px 12px", borderRadius: "6px", border: "1px solid", borderColor: activeTone === tone.id ? "#52a5ac" : "#e0f0ec", cursor: "pointer", background: activeTone === tone.id ? "#52a5ac" : "white", color: activeTone === tone.id ? "white" : "#666", fontSize: "12.5px", fontWeight: activeTone === tone.id ? "600" : "400", textAlign: "left" }}>
-                  {tone.label}
-                </button>
+          {!historyOpen && (
+            <div style={{ padding: "20px 16px 12px", overflowY: "auto" }}>
+              <div style={{ fontSize: "11px", fontWeight: "600", color: "#52a5ac", letterSpacing: "1.2px", textTransform: "uppercase", marginBottom: "10px", paddingLeft: "4px" }}>I'm working on...</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                {ROLES.map((role) => (
+                  <button key={role.id} onClick={() => setActiveRole(role.id)} style={{ display: "flex", alignItems: "center", gap: "10px", padding: "9px 12px", borderRadius: "8px", border: "none", cursor: "pointer", background: activeRole === role.id ? "#eaf6f1" : "transparent", color: activeRole === role.id ? "#52a5ac" : "#666", fontWeight: activeRole === role.id ? "600" : "400", fontSize: "13.5px", textAlign: "left", borderLeft: activeRole === role.id ? "3px solid #52a5ac" : "3px solid transparent" }}>
+                    <span style={{ fontSize: "16px" }}>{role.icon}</span>{role.label}
+                  </button>
+                ))}
+              </div>
+
+              <div style={{ marginTop: "20px" }}>
+                <div style={{ fontSize: "11px", fontWeight: "600", color: "#52a5ac", letterSpacing: "1.2px", textTransform: "uppercase", marginBottom: "10px", paddingLeft: "4px" }}>Tone</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                  {TONES.map((tone) => (
+                    <button key={tone.id} onClick={() => setActiveTone(tone.id)} style={{ padding: "7px 12px", borderRadius: "6px", border: "1px solid", borderColor: activeTone === tone.id ? "#52a5ac" : "#e0f0ec", cursor: "pointer", background: activeTone === tone.id ? "#52a5ac" : "white", color: activeTone === tone.id ? "white" : "#666", fontSize: "12.5px", fontWeight: activeTone === tone.id ? "600" : "400", textAlign: "left" }}>
+                      {tone.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {historyOpen && (
+            <div style={{ flex: 1, overflowY: "auto", padding: "16px" }}>
+              <button onClick={startNewConversation} style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1.5px solid #52a5ac", background: "white", color: "#52a5ac", fontWeight: "600", fontSize: "13px", cursor: "pointer", marginBottom: "16px" }}>+ New Conversation</button>
+              {Object.keys(groupedConversations).length === 0 && (
+                <div style={{ fontSize: "12px", color: "#999", textAlign: "center", marginTop: "20px" }}>No saved conversations yet</div>
+              )}
+              {Object.entries(groupedConversations).map(([role, convos]) => (
+                <div key={role} style={{ marginBottom: "16px" }}>
+                  <div style={{ fontSize: "11px", fontWeight: "600", color: "#52a5ac", letterSpacing: "1px", textTransform: "uppercase", marginBottom: "6px" }}>{role}</div>
+                  {convos.map((c) => (
+                    <div key={c.id} onClick={() => loadConversation(c)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 10px", borderRadius: "6px", background: c.id === currentConvoId ? "#eaf6f1" : "transparent", cursor: "pointer", marginBottom: "2px" }}>
+                      <span style={{ fontSize: "12.5px", color: "#444", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>{c.title}</span>
+                      <button onClick={(e) => deleteConversation(c.id, e)} style={{ background: "none", border: "none", color: "#ccc", cursor: "pointer", fontSize: "13px", padding: "2px 6px" }}>✕</button>
+                    </div>
+                  ))}
+                </div>
               ))}
             </div>
-          </div>
+          )}
 
           <div style={{ padding: "14px 16px", background: "#eaf6f1", borderTop: "1px solid #e0f0ec", fontSize: "11px", color: "#52a5ac", fontStyle: "italic", textAlign: "center", fontWeight: "500" }}>
             Do no harm. Take no shit. 🦋
