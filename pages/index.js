@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import Head from "next/head";
+
 const ROLES = [
   { id: "coach", label: "Coach Support", icon: "🧭" },
   { id: "social", label: "Social Media", icon: "📱" },
@@ -33,12 +34,12 @@ export default function MMDBot() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, streamingText]);
+
   useEffect(() => {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js');
     }
   }, []);
-
 
   const handleSend = async () => {
     if (!input.trim() || loading) return;
@@ -91,11 +92,10 @@ export default function MMDBot() {
       setLoading(false);
     }
   };
-const copyToClipboard = (text) => {
+
+  const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
   };
-
-  const handleKeyDown = (e) => {
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -112,6 +112,7 @@ const copyToClipboard = (text) => {
   };
 
   return (
+    <>
     <div style={{ display: "flex", height: "100vh", fontFamily: "'Inter', sans-serif", background: "#eaf6f1" }}>
       {sidebarOpen && (
         <div style={{ width: "260px", background: "white", borderRight: "1px solid #e0f0ec", display: "flex", flexDirection: "column", boxShadow: "2px 0 12px rgba(82,165,172,0.08)" }}>
@@ -166,7 +167,7 @@ const copyToClipboard = (text) => {
         <div style={{ flex: 1, overflowY: "auto", padding: "24px", display: "flex", flexDirection: "column", gap: "16px" }}>
           {messages.map((msg, i) => (
             <div key={i} style={{ display: "flex", justifyContent: msg.role === "user" ? "flex-end" : "flex-start", gap: "10px", alignItems: "flex-start" }}>
-             {msg.role === "assistant" && (
+              {msg.role === "assistant" && (
                 <div style={{ width: "34px", height: "34px", borderRadius: "50%", background: "linear-gradient(135deg, #52a5ac, #3d8a91)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "16px", flexShrink: 0 }}>🦋</div>
               )}
               <div style={{ position: "relative", maxWidth: "72%" }}>
@@ -176,7 +177,6 @@ const copyToClipboard = (text) => {
                   <button onClick={() => copyToClipboard(msg.content)} style={{ marginTop: "4px", background: "none", border: "none", cursor: "pointer", fontSize: "11px", color: "#52a5ac", fontWeight: "600", padding: "2px 6px", borderRadius: "6px" }}>📋 Copy</button>
                 )}
               </div>
-
               {msg.role === "user" && (
                 <div style={{ width: "34px", height: "34px", borderRadius: "50%", background: "linear-gradient(135deg, #dd226e, #c41d60)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", flexShrink: 0, color: "white", fontWeight: "700" }}>M</div>
               )}
@@ -186,7 +186,7 @@ const copyToClipboard = (text) => {
           {streamingText && (
             <div style={{ display: "flex", gap: "10px", alignItems: "flex-start" }}>
               <div style={{ width: "34px", height: "34px", borderRadius: "50%", background: "linear-gradient(135deg, #52a5ac, #3d8a91)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "16px", flexShrink: 0 }}>🦋</div>
-              <div style={{ maxWidth: "72%", padding: "13px 17px", borderRadius: "18px 18px 18px 4px", background: "white", fontSize: "14px", lineHeight: "1.65", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
+              <div style={{ maxWidth: "72%", padding: "13px 17px", borderRadius: "18px 18px 18px 4px", background: "white", fontSize: "14px", lineHeight: "1.65", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", color: "#1a1a1a" }}
                 dangerouslySetInnerHTML={{ __html: formatMessage(streamingText) }} />
             </div>
           )}
@@ -220,16 +220,16 @@ const copyToClipboard = (text) => {
         * { box-sizing: border-box; }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: #c8e8e4; border-radius: 3px; }
-        <Head>
-        <link rel="manifest" href="/manifest-main.json" />
-        <meta name="theme-color" content="#52a5ac" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="MMD Bot" />
-        <link rel="apple-touch-icon" href="/icon-192.png" />
-      </Head>
-
       `}</style>
     </div>
+    <Head>
+      <link rel="manifest" href="/manifest-main.json" />
+      <meta name="theme-color" content="#52a5ac" />
+      <meta name="apple-mobile-web-app-capable" content="yes" />
+      <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+      <meta name="apple-mobile-web-app-title" content="MMD Bot" />
+      <link rel="apple-touch-icon" href="/icon-192.png" />
+    </Head>
+    </>
   );
 }
