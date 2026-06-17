@@ -137,7 +137,7 @@ const formatMessage = (text) => {
               <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: "linear-gradient(135deg, #52a5ac, #3d8a91)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "15px", flexShrink: 0 }}>🦋</div>
             )}
             <div style={{ maxWidth: "78%", padding: "12px 16px", borderRadius: msg.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px", background: msg.role === "user" ? "linear-gradient(135deg, #dd226e, #c41d60)" : "white", color: msg.role === "user" ? "white" : "#1a1a1a", fontSize: "14px", lineHeight: "1.7", boxShadow: msg.role === "user" ? "0 2px 12px rgba(221,34,110,0.2)" : "0 2px 10px rgba(0,0,0,0.06)" }}
-              dangerouslySetInnerHTML={{ __html: formatMessage(msg.content) }} style={{ color: "#1a1a1a" }} />
+              dangerouslySetInnerHTML={{ __html: formatMessage(msg.content) }} />
           </div>
         ))}
 
