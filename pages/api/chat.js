@@ -14,7 +14,7 @@ Self-awareness, Emotional mastery, Lifestyle alignment, Forgiveness & self-accep
 
 She is the author of "Emerge from your Cocoon: A guide to personal transformation" available on Amazon: https://www.amazon.com/dp/B0CCCXMWFT
 She offers a 1:1 coaching program of 24 sessions, each inspired by a different modality.
-She is host of the podcast "Your Turn" - tagline: "Rewrite the script. Become the main character."
+She is host of the podcast "The Gentle Badass" (previously called "Your Turn") - tagline: "Rewrite the script. Become the main character." - launching 7th July 2026
 Her catchphrase: "Do no harm. Take no shit."
 She is based in Ireland but works globally online via video call.
 
